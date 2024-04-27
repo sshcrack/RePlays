@@ -4,6 +4,17 @@ import { useEffect, useRef, useState } from 'react';
 import DropDownMenu from '../../components/DropDownMenu';
 import AudioDevice from '../../components/AudioDevice';
 
+
+type BasicItem = {
+  name: string,
+  onClick: () => unknown,
+}
+
+type DisplayAudioDevice = BasicItem & {
+  group: string,
+  id: string,
+}
+
 interface Props {
   updateSettings: () => void;
   settings: CaptureSettings | undefined;
@@ -13,16 +24,16 @@ export const Capture: React.FC<Props> = ({ settings, updateSettings }) => {
   const { t } = useTranslation();
 
   const customVideoQuality = useRef<HTMLInputElement | null>(null);
-  const [audioDevices, setAudioDevices] = useState<any[]>();
-  const [availableEncoders, setAvailableEncoders] = useState<any[]>();
-  const [availableRateControls, setAvailableRateControls] = useState<any[]>();
-  const [availableFileFormats, setAvailableFileFormats] = useState<any[]>();
+  const [audioDevices, setAudioDevices] = useState<DisplayAudioDevice[]>();
+  const [availableEncoders, setAvailableEncoders] = useState<BasicItem[]>();
+  const [availableRateControls, setAvailableRateControls] = useState<BasicItem[]>();
+  const [availableFileFormats, setAvailableFileFormats] = useState<BasicItem[]>();
 
   useEffect(() => {
     if (settings == null) return;
     if (settings.inputDevicesCache == null || settings.outputDevicesCache == null) return;
 
-    let ddmItems: any[] = [];
+    let ddmItems: DisplayAudioDevice[] = [];
 
     settings.inputDevicesCache.forEach((device) => {
       // by default, if there does not exist any devices, we will push default device
@@ -42,6 +53,7 @@ export const Capture: React.FC<Props> = ({ settings, updateSettings }) => {
       ddmItems.push({
         group: t('settingsCaptureItem26'), // Input
         name: device.deviceLabel,
+        id: device.deviceId,
         onClick: () => {
           if (settings.inputDevices.find((d) => d.deviceId === device.deviceId)) return;
 
@@ -95,7 +107,7 @@ export const Capture: React.FC<Props> = ({ settings, updateSettings }) => {
     if (settings == null) return;
     if (settings.encodersCache == null) return;
 
-    let ddmItems: any[] = [];
+    let ddmItems: BasicItem[] = [];
 
     settings.encodersCache.forEach((encoder) => {
       ddmItems.push({
@@ -115,7 +127,7 @@ export const Capture: React.FC<Props> = ({ settings, updateSettings }) => {
     if (settings == null) return;
     if (settings.rateControlCache == null) return;
 
-    let rateControlsItems: any[] = [];
+    let rateControlsItems: BasicItem[] = [];
 
     const rateControls = localStorage.getItem('availableRateControls')!.split(',');
     rateControls.forEach((rateControl) => {
@@ -136,7 +148,7 @@ export const Capture: React.FC<Props> = ({ settings, updateSettings }) => {
     if (settings == null) return;
     if (settings.fileFormatsCache == null) return;
 
-    let fileFormatItems: any[] = [];
+    let fileFormatItems: BasicItem[] = [];
     var availableFormats = localStorage.getItem('availableFileFormats');
 
     // If we dont have any file formats in the request, default to MP4 and MKV.
